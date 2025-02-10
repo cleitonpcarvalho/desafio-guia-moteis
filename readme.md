@@ -1,117 +1,191 @@
-```markdown
-# Desafio de Análise de Conversas com OpenAI
+# Documentação da Aplicação de Análise de Conversas com OpenAI
 
-Este projeto foi desenvolvido como parte de um desafio técnico para a vaga de Engenheiro(a) de Inteligência Conversacional e Assistentes Virtuais. A aplicação tem como objetivo analisar conversas de atendimento utilizando a API da OpenAI (GPT-4) e armazenar os resultados em um banco de dados PostgreSQL.
+## Introdução
 
-## Descrição do Projeto
+Esta aplicação foi desenvolvida por **Cleiton Carvalho**, Engenheiro de Software, como parte de um desafio técnico para uma vaga de **Engenheiro(a) de Inteligência Conversacional e Assistentes Virtuais**. O objetivo da aplicação é analisar conversas de atendimento ao cliente e extrair informações úteis para melhorar a qualidade do serviço e o desempenho da assistente virtual.
 
-A aplicação realiza a análise de conversas de atendimento, extraindo três principais informações:
+A aplicação usa a API oficial do OpenAI para analisar as conversas, processando-as com o modelo `gpt-4o-mini`. Os resultados da análise são gravados em um banco de dados PostgreSQL, com informações sobre a satisfação do cliente, resumo da conversa e sugestões de melhorias.
 
-1. **Satisfação do cliente**: Uma nota de 0 a 10 que reflete o nível de satisfação do cliente com o atendimento.
-2. **Resumo da conversa**: Um breve resumo da conversa, destacando os pontos principais.
-3. **Melhorias sugeridas**: Sugestões de como a conversa poderia ter sido melhorada.
+---
 
-A aplicação utiliza a API da OpenAI para processar as mensagens e armazenar os resultados em um banco de dados PostgreSQL.
+## Objetivo do Desafio
+
+A aplicação tem como objetivo analisar conversas entre clientes e assistentes virtuais, extraindo as seguintes informações:
+
+- **Satisfaction**: Nota de satisfação do cliente (de 0 a 10)
+- **Summary**: Resumo da conversa
+- **Improvement**: Como a conversa poderia ter sido melhor
+
+Essas informações são extraídas utilizando a API do OpenAI e gravadas em um banco de dados PostgreSQL.
+
+---
 
 ## Estrutura do Projeto
 
-O projeto está organizado da seguinte forma:
+A aplicação está estruturada da seguinte forma:
 
 ```
-.
-├── Dockerfile
-├── docker-compose.yml
-├── main.py
-├── requirements.txt
-├── README.md
-└── app
-    ├── db.py
-    └── gpt.py
+/ (Raiz do projeto)
+│
+├── app/
+│   ├── db.py                # Manipulação do banco de dados
+│   ├── gpt.py               # Integração com a API OpenAI
+│
+├── Dockerfile               # Configuração do Docker para a aplicação
+├── docker-compose.yml       # Configuração do Docker Compose
+├── main.py                  # Código principal da aplicação
+├── requirements.txt         # Dependências do projeto
+└── .env                     # Arquivo de variáveis de ambiente
 ```
 
-### Arquivos Principais
+---
 
-- **Dockerfile**: Contém as instruções para construir a imagem Docker da aplicação.
-- **docker-compose.yml**: Define os serviços da aplicação e do banco de dados PostgreSQL.
-- **main.py**: O ponto de entrada da aplicação, responsável por orquestrar a análise das conversas.
-- **requirements.txt**: Lista as dependências do projeto.
-- **app/db.py**: Contém as funções para interagir com o banco de dados PostgreSQL.
-- **app/gpt.py**: Contém as funções para interagir com a API da OpenAI.
+## Componentes Principais
 
-## Configuração do Ambiente
+### 1. **Banco de Dados** (`db.py`)
 
-### Pré-requisitos
+A comunicação com o banco de dados é realizada através do arquivo `db.py`. Ele contém funções para:
 
-- Docker
-- Docker Compose
-- Chave da API da OpenAI
+- **Conectar ao banco de dados** (`conectar`)
+- **Obter sessões de conversas** (`obter_ids_session`)
+- **Mostrar conteúdo da conversa** (`show_content`)
+- **Inserir análise de conversas** (`inserir_analysis`)
 
-### Passos para Configuração
+A conexão é feita com o PostgreSQL, e os dados são extraídos e gravados conforme o fluxo de execução da aplicação.
 
-1. **Clone o repositório**:
+### 2. **Integração com o OpenAI** (`gpt.py`)
 
-   ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
-   cd seu-repositorio
-   ```
+O arquivo `gpt.py` contém funções para interagir com a API do OpenAI:
 
-2. **Configure as variáveis de ambiente**:
+- **Enviar mensagens para o ChatGPT**: Função `enviar_mensagem` envia uma conversa ou prompt para a API do OpenAI.
+- **Funções de análise**:
+  - `get_satisfaction`: Obtém a satisfação do cliente com base na conversa.
+  - `get_summary`: Retorna um resumo da conversa.
+  - `get_improvement`: Sugere melhorias para a conversa.
 
-   Crie um arquivo `.env` na raiz do projeto e adicione as seguintes variáveis:
+Essas funções usam a API do OpenAI para processar as mensagens e obter as análises de satisfação, resumo e sugestões de melhorias.
 
-   ```plaintext
-   POSTGRES_USER=seu_usuario
-   POSTGRES_PASSWORD=sua_senha
-   POSTGRES_DB=seu_banco_de_dados
-   DATABASE_URL=postgresql://seu_usuario:sua_senha@db:5432/seu_banco_de_dados
-   OPENAI_API_KEY=sua_chave_da_api_openai
-   ```
+### 3. **Arquivo Principal** (`main.py`)
 
-3. **Construa e execute os contêineres**:
+O arquivo `main.py` é o coração da aplicação. Ele:
 
-   ```bash
-   docker-compose up --build
-   ```
+- Obtém os IDs das sessões de conversas
+- Itera sobre as mensagens e as organiza, diferenciando se foram enviadas pelo cliente ou pelo assistente
+- Chama as funções do OpenAI para obter a análise da conversa
+- Insere os resultados da análise no banco de dados PostgreSQL
+- Exibe os resultados da análise no console
 
-   Isso irá construir e iniciar os contêineres da aplicação e do banco de dados.
+### 4. **Docker e Docker Compose**
 
-## Funcionamento da Aplicação
+#### Dockerfile
 
-A aplicação funciona da seguinte forma:
+O **Dockerfile** configura o ambiente da aplicação, usando a imagem `python:3.10-slim` para instalar as dependências necessárias e executar o script `main.py`.
 
-1. **Obtenção das Conversas**: A aplicação obtém as conversas do banco de dados, identificando as mensagens enviadas pelo cliente e pelo chatbot.
-2. **Análise das Conversas**: As conversas são enviadas para a API da OpenAI, que retorna a nota de satisfação, o resumo da conversa e as sugestões de melhoria.
-3. **Armazenamento dos Resultados**: Os resultados da análise são armazenados no banco de dados na tabela `analysis`.
+```dockerfile
+FROM python:3.10-slim
 
-### Exemplo de Uso
+WORKDIR /usr/src/app
 
-Ao executar a aplicação, ela irá automaticamente analisar as conversas disponíveis no banco de dados e armazenar os resultados. Os dados de análise serão exibidos no console para fins de teste.
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-```plaintext
-----------------------------------------------------------
-Análise da conversa com id da Sessão - 1:
+COPY . .
 
-Satisfaction: 8
-
-Summary: O cliente perguntou sobre disponibilidade de quartos e a assistente respondeu de forma clara e objetiva, concluindo a reserva com sucesso.
-
-Improvement: A assistente poderia ter sugerido opções adicionais, como upgrades de quarto ou serviços extras, para aumentar a satisfação do cliente.
-
-Data de criação: 2023-10-01 12:34:56
+CMD [ "python", "./main.py" ]
 ```
 
-## Avaliação
+#### docker-compose.yml
 
-Os principais pontos avaliados neste desafio são:
+O arquivo `docker-compose.yml` define dois serviços:
 
-- **Elaboração do Prompt**: A qualidade e precisão dos prompts utilizados para extrair as informações desejadas.
-- **Solução de Extração de Dados**: A eficácia da solução para processar as conversas e armazenar os resultados.
-- **Execução da Aplicação**: A capacidade da aplicação de ser iniciada e funcionar corretamente ao executar o comando `docker-compose up --build`.
+- **db**: Serviço de banco de dados PostgreSQL
+- **python_app**: Serviço da aplicação Python, que depende do serviço de banco de dados
+
+```yaml
+version: '3.8'
+
+services:
+
+  db:
+    container_name: teste_guia_db
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./prisma/sql/:/docker-entrypoint-initdb.d/
+
+  python_app:
+    container_name: python_app
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "5000:5000"
+    command: ["python", "main.py"]
+
+volumes:
+  postgres:
+```
+
+---
+
+## Como Executar a Aplicação
+
+### 1. **Configuração do Ambiente**
+
+Clone o repositório e configure o arquivo `.env` com as variáveis necessárias:
+
+```dotenv
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=your_postgres_db
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### 2. **Build e Execução com Docker Compose**
+
+Para rodar a aplicação, execute os seguintes comandos no diretório raiz do projeto:
+
+```bash
+docker-compose up --build
+```
+
+Este comando irá construir e iniciar os contêineres definidos no `docker-compose.yml`.
+
+### 3. **Verificação e Testes**
+
+A aplicação irá automaticamente:
+
+1. Analisar as conversas no banco de dados
+2. Extrair as informações de satisfação, resumo e sugestões de melhorias
+3. Inserir os resultados na tabela `analysis`
+4. Imprimir os resultados no console para fins de teste
+
+---
 
 ## Considerações Finais
 
-Este projeto demonstra a capacidade de integrar tecnologias avançadas de processamento de linguagem natural (NLP) com bancos de dados e contêineres Docker, criando uma solução robusta e escalável para análise de conversas de atendimento.
+Esta aplicação serve como uma base para análise de conversas e pode ser expandida para incluir mais funcionalidades, como:
 
-Para qualquer dúvida ou sugestão, sinta-se à vontade para entrar em contato.
+- **Envio de mensagens para o WhatsApp** (Integração com a API Oficial)
+- **Melhorias na análise do comportamento do cliente**
+- **Análises adicionais de dados coletados**
 
-```
+A implementação utiliza **Docker** para garantir que a aplicação seja fácil de configurar e executar em qualquer ambiente.
+
+Se você tiver dúvidas ou sugestões, fique à vontade para entrar em contato!
+
+---
+
+**Cleiton Carvalho**  
+Engenheiro de Software  
+[LinkedIn](https://www.linkedin.com/in/cleitonpcarvalho/)
